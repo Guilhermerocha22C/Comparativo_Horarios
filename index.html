@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <title>Comparativo de Horários</title>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="max-w-3xl w-full bg-white rounded-lg shadow-xl overflow-hidden">
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
+      <h1 class="text-2xl md:text-3xl font-bold text-center">Comparativo de Horários</h1>
+      <p class="text-center opacity-90 mt-1">São Paulo, Brasil e San Diego, Califórnia</p>
+    </div>
+    
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+ 
+        <div class="bg-blue-50 rounded-lg p-6 border border-blue-200 shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-blue-800">São Paulo</h2>
+              <p class="text-blue-600">Brasil (BRT)</p>
+            </div>
+            <img class="h-10" src="./assets/bandeira-nacional-brasil.jpg" alt="Bandeira do Brasil">
+          </div>
+          <div class="text-center">
+            <div id="sp-time" class="text-4xl font-bold text-blue-900"></div>
+            <div id="sp-date" class="text-gray-600 mt-1"></div>
+          </div>
+        </div>
+        
+        <div class="bg-purple-50 rounded-lg p-6 border border-purple-200 shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-purple-800">San Diego</h2>
+              <p class="text-purple-600">Califórnia (PST/PDT)</p>
+            </div>
+            <img class="h-10" src="./assets/Flag_of_the_United_States.svg.png" alt="Bandeira dos EUA">
+          </div>
+          <div class="text-center">
+            <div id="sd-time" class="text-4xl font-bold text-purple-900"></div>
+            <div id="sd-date" class="text-gray-600 mt-1"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Diferença de Horário:</h3>
+        <div id="time-diff" class="text-center text-xl font-bold text-gray-700"></div>
+      </div>
+
+      <div class="mt-6 bg-green-50 rounded-lg p-4 border border-green-200">
+        <h3 class="text-lg font-semibold text-green-800 mb-3">Converter Horário Manualmente:</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div class="bg-white p-3 rounded border border-green-100">
+            <h4 class="font-medium text-green-700 mb-2">São Paulo → San Diego</h4>
+            <div class="flex space-x-2 mb-2">
+              <input type="time" id="sp-input-time" class="flex-1 border rounded p-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+              <button onclick="convertSPtoSD()" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2">Converter</button>
+            </div>
+            <div id="sp-to-sd-result" class="mt-2 text-center hidden p-2 bg-green-100 rounded"></div>
+          </div>
+          
+          <div class="bg-white p-3 rounded border border-green-100">
+            <h4 class="font-medium text-green-700 mb-2">San Diego → São Paulo</h4>
+            <div class="flex space-x-2 mb-2">
+              <input type="time" id="sd-input-time" class="flex-1 border rounded p-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+              <button onclick="convertSDtoSP()" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2">Converter</button>
+            </div>
+            <div id="sd-to-sp-result" class="mt-2 text-center hidden p-2 bg-green-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+        <h3 class="text-lg font-semibold text-yellow-800 mb-2">Informações importantes:</h3>
+        <ul class="space-y-2 text-yellow-700">
+          <li>• O horário de verão pode afetar a diferença entre os fusos horários</li>
+          <li>• São Paulo segue o horário de Brasília (BRT)</li>
+          <li>• San Diego segue o horário do Pacífico (PST/PDT)</li>
+          <li>• Atualizando automaticamente a cada segundo</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="bg-gray-100 p-4 text-center text-gray-600 text-sm">
+      Última atualização: <span id="last-update"></span>
+    </div>
+  </div>
+  
+  <script>
+
+    function isDaylightSavingTime(date) {
+      const month = date.getUTCMonth() + 1; 
+      return month >= 3 && month <= 11;
+    }
+    
+    function getHourDifference() {
+      const now = new Date();
+      const isDST = isDaylightSavingTime(now);
+      return isDST ? 4 : 5; 
+    }
+    
+    function updateClocks() {
+      const now = new Date();
+      
+      const spTime = new Date(now.getTime());
+      spTime.setHours(now.getUTCHours() - 3);
+      
+      const sdTime = new Date(now.getTime());
+      const isDST = isDaylightSavingTime(now);
+      sdTime.setHours(now.getUTCHours() - (isDST ? 7 : 8));
+      
+      document.getElementById('sp-time').textContent = formatTime(spTime);
+      document.getElementById('sd-time').textContent = formatTime(sdTime);
+      
+      document.getElementById('sp-date').textContent = formatDate(spTime, 'pt-BR');
+      document.getElementById('sd-date').textContent = formatDate(sdTime, 'en-US');
+      
+      const hourDiff = getHourDifference();
+      document.getElementById('time-diff').textContent = 
+        `São Paulo está ${hourDiff} horas à frente de San Diego`;
+      
+      document.getElementById('last-update').textContent = formatTime(now) + ' UTC';
+    }
+    
+    function convertSPtoSD() {
+      const spTimeInput = document.getElementById('sp-input-time').value;
+      
+      if (!spTimeInput) {
+        alert('Por favor, insira um horário válido para São Paulo');
+        return;
+      }
+      
+      const [hours, minutes] = spTimeInput.split(':').map(Number);
+      const hourDiff = getHourDifference();
+      
+      let sdHours = hours - hourDiff;
+      if (sdHours < 0) sdHours += 24;
+      
+      const sdTimeResult = `${sdHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      
+      const resultElement = document.getElementById('sp-to-sd-result');
+      resultElement.textContent = `${spTimeInput} em São Paulo = ${sdTimeResult} em San Diego`;
+      resultElement.classList.remove('hidden');
+    }
+    
+    function convertSDtoSP() {
+      const sdTimeInput = document.getElementById('sd-input-time').value;
+      
+      if (!sdTimeInput) {
+        alert('Por favor, insira um horário válido para San Diego');
+        return;
+      }
+      
+      const [hours, minutes] = sdTimeInput.split(':').map(Number);
+      const hourDiff = getHourDifference();
+      
+      let spHours = hours + hourDiff;
+      if (spHours >= 24) spHours -= 24;
+      
+      const spTimeResult = `${spHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      
+      const resultElement = document.getElementById('sd-to-sp-result');
+      resultElement.textContent = `${sdTimeInput} em San Diego = ${spTimeResult} em São Paulo`;
+      resultElement.classList.remove('hidden');
+    }
+    
+    function formatTime(date) {
+      return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false});
+    }
+    
+    function formatDate(date, locale) {
+      return date.toLocaleDateString(locale, {
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric'
+      });
+    }
+    
+    updateClocks();
+    setInterval(updateClocks, 1000);
+  </script>
+</body>
+</html>
